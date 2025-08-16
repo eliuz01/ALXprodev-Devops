@@ -1,0 +1,19 @@
+#!/bin/bash
+# Script to extract Pokémon info from data.json
+
+JSON_FILE="data.json"
+
+# Extract Pokémon name
+name=$(jq -r '.name' "$JSON_FILE" | sed 's/\b\(.\)/\u\1/')  # capitalize first letter
+
+# Extract height (convert decimeters to meters)
+height=$(jq -r '.height' "$JSON_FILE" | awk '{printf "%.1f", $1/10}')
+
+# Extract weight (convert hectograms to kg)
+weight=$(jq -r '.weight' "$JSON_FILE" | awk '{printf "%.0f", $1/10}')
+
+# Extract types (take first type if multiple)
+type=$(jq -r '.types[0].type.name' "$JSON_FILE" | sed 's/\b\(.\)/\u\1/')  # capitalize first letter
+
+# Print in human-readable format
+echo "$name is of type $type, weighs ${weight}kg, and is ${height}m tall."
