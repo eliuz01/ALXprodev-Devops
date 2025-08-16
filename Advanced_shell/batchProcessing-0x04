@@ -1,23 +1,19 @@
 #!/bin/bash
-# Script to fetch multiple Pokémon data in parallel
-
 POKEMON_LIST=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
 OUTPUT_DIR="pokemon_data_parallel"
 MAX_RETRIES=3
 
-# Create output directory if it doesn't exist
 mkdir -p "$OUTPUT_DIR"
+PIDS=()  # Array to store PIDs of background jobs
 
 fetch_pokemon() {
     local pokemon=$1
     local attempt=1
     local success=false
-
     echo "Fetching data for $pokemon..."
 
     while [ $attempt -le $MAX_RETRIES ]; do
         RESPONSE=$(curl -s -w "%{http_code}" -o "$OUTPUT_DIR/$pokemon.json" "https://pokeapi.co/api/v2/pokemon/$pokemon")
-        
         if [[ "$RESPONSE" == "200" ]]; then
             echo "Saved data to $OUTPUT_DIR/$pokemon.json ✅"
             success=true
@@ -34,12 +30,19 @@ fetch_pokemon() {
     fi
 }
 
-# Loop and run fetches in background
+# Run each fetch in background and save its PID
 for pokemon in "${POKEMON_LIST[@]}"; do
     fetch_pokemon "$pokemon" &
+    PIDS+=($!)  # Save PID of background job
 done
 
+# Optional: Example of killing a process if needed (demonstrates 'kill')
+# Here we are just showing usage; normally, we let all finish
+# kill "${PIDS[0]}" 2>/dev/null  # Uncomment to kill first job as demo
+
 # Wait for all background jobs to finish
-wait
+for pid in "${PIDS[@]}"; do
+    wait "$pid"
+done
 
 echo "All Pokémon data fetches complete."
