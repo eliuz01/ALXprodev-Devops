@@ -1,0 +1,13 @@
+#!/bin/bash
+# Script to fetch data for Pikachu from the Pokémon API
+
+URL="https://pokeapi.co/api/v2/pokemon/pikachu"
+OUTPUT="data.json"
+ERROR_LOG="errors.txt"
+
+# Make request and handle success or failure
+curl -s -o "$OUTPUT" -w "%{http_code}" "$URL" | grep -q "200"
+if [ $? -ne 0 ]; then
+    echo "Failed to fetch data for Pikachu at $(date)" >> "$ERROR_LOG"
+    rm -f "$OUTPUT"   # remove incomplete json if request failed
+fi
